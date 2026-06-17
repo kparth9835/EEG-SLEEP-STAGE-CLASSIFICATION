@@ -1,7 +1,6 @@
 """
 =============================================================
   Sleep Stage Classification Pipeline (Sleep-EDF OLD FORMAT)
-  Fully Updated for Your .hyp + .rec Files
 =============================================================
 
 This script:
@@ -53,7 +52,6 @@ from imblearn.under_sampling import RandomUnderSampler
 
 DATA_DIR = r"D:\PDPU\Santosh Sir Sleep Reference Paper\sleep_stage_project\sleep-edf-database-1.0.0"
 
-
 # ===========================================================
 #                 OLD FORMAT HYPNOGRAM PARSER
 # ===========================================================
@@ -83,7 +81,6 @@ def read_hyp_file_old_format(hyp_path):
 
     stages = np.array(stages, dtype=int)
     return stages
-
 
 # ===========================================================
 #           EDF LOADER (HANDLES .rec by renaming)
