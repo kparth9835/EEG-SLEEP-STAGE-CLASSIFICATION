@@ -1,0 +1,21 @@
+# Dataset files (too large for GitHub)
+*.rec
+*.hyp
+*.edf
+data/
+
+# Python
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# Model files (add later when generated)
+*.pkl
+
+# Environment
+.env
+venv/
+
+# OS files
+.DS_Store
+Thumbs.db
