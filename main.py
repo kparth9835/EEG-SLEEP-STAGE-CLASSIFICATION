@@ -1,6 +1,7 @@
 """
 =============================================================
   Sleep Stage Classification Pipeline (Sleep-EDF OLD FORMAT)
+  Fully Updated for Your .hyp + .rec Files
 =============================================================
 
 This script:
@@ -36,6 +37,7 @@ from sklearn.metrics import (
     accuracy_score, classification_report,
     confusion_matrix, ConfusionMatrixDisplay
 )
+from sklearn.neural_network import MLPClassifier
 from sklearn.preprocessing import StandardScaler
 from sklearn.feature_selection import SelectKBest, f_classif
 
@@ -51,6 +53,7 @@ from imblearn.under_sampling import RandomUnderSampler
 # ===========================================================
 
 DATA_DIR = r"D:\PDPU\Santosh Sir Sleep Reference Paper\sleep_stage_project\sleep-edf-database-1.0.0"
+
 
 # ===========================================================
 #                 OLD FORMAT HYPNOGRAM PARSER
@@ -81,6 +84,7 @@ def read_hyp_file_old_format(hyp_path):
 
     stages = np.array(stages, dtype=int)
     return stages
+
 
 # ===========================================================
 #           EDF LOADER (HANDLES .rec by renaming)
@@ -244,14 +248,14 @@ def run_experiment(X, y, groups, name):
 
         pipe = Pipeline([
             ("scaler", StandardScaler()),
+            ("select", SelectKBest(f_classif, k=20)),
             ("rus", RandomUnderSampler()),
             ("clf", AdaBoostClassifier(
-            estimator=DecisionTreeClassifier(max_depth=3),
-            n_estimators=100,
-            learning_rate=0.1,
-            random_state=42
-        ))
-
+                estimator=DecisionTreeClassifier(max_depth=3),
+                n_estimators=100,
+                learning_rate=0.1,
+                random_state=42
+            ))
         ])
 
         pipe.fit(X[tr], y[tr])
@@ -271,9 +275,48 @@ def run_experiment(X, y, groups, name):
     cm = confusion_matrix(all_true, all_pred)
     plt.figure(figsize=(5,5))
     ConfusionMatrixDisplay(cm).plot(cmap="Blues")
-    plt.title(f"Confusion Matrix — {name}")
+    plt.title(f"Confusion Matrix — AdaBoost — {name}")
     plt.show()
 
+
+def run_experiment_mlp(X, y, groups, name):
+    print("\n==================== MLP -", name, "====================")
+
+    logo = LeaveOneGroupOut()
+    all_true, all_pred = [], []
+
+    for i, (tr, te) in enumerate(logo.split(X, y, groups), 1):
+
+        pipe = Pipeline([
+            ("scaler", StandardScaler()),
+            ("select", SelectKBest(f_classif, k=20)),
+            ("rus", RandomUnderSampler()),
+            ("clf", MLPClassifier(
+                hidden_layer_sizes=(64, 32),
+                max_iter=300,
+                random_state=42
+            ))
+        ])
+
+        pipe.fit(X[tr], y[tr])
+        y_pred = pipe.predict(X[te])
+
+        print(f"Fold {i} accuracy = {accuracy_score(y[te], y_pred):.3f}")
+
+        all_true.extend(y[te])
+        all_pred.extend(y_pred)
+
+    all_true = np.array(all_true)
+    all_pred = np.array(all_pred)
+
+    print("\nFINAL MLP ACCURACY:", accuracy_score(all_true, all_pred))
+    print(classification_report(all_true, all_pred, digits=3))
+
+    cm = confusion_matrix(all_true, all_pred)
+    plt.figure(figsize=(5,5))
+    ConfusionMatrixDisplay(cm).plot(cmap="Greens")
+    plt.title(f"Confusion Matrix — MLP — {name}")
+    plt.show()
 
 # ===========================================================
 #                           MAIN
@@ -281,13 +324,15 @@ def run_experiment(X, y, groups, name):
 
 def main():
 
+    all_files = sorted(glob.glob(os.path.join(DATA_DIR, "*")))
     rec_files = sorted(glob.glob(os.path.join(DATA_DIR, "*.rec")))
+
     print("\nFound .rec files:", len(rec_files))
 
     all_X, all_y, all_subj = [], [], []
 
     for rec in rec_files:
-        base = os.path.splitext(os.path.basename(rec))[0]
+        base = os.path.basename(rec)
         hyp = rec.replace(".rec", ".hyp")
 
         print("\nProcessing:", base)
@@ -322,21 +367,25 @@ def main():
     y5 = map5(yp)
     valid = np.isin(y5, [0,1,2,3,5])
     run_experiment(F[valid], y5[valid], sp[valid], "5-Class")
+    run_experiment_mlp(F[valid], y5[valid], sp[valid], "5-Class")
 
     # 4-class
     y4 = map4(yp)
     valid = y4>=0
     run_experiment(F[valid], y4[valid], sp[valid], "4-Class")
+    run_experiment_mlp(F[valid], y4[valid], sp[valid], "4-Class")
 
     # 3-class
     y3 = map3(yp)
     valid = y3>=0
     run_experiment(F[valid], y3[valid], sp[valid], "3-Class")
+    run_experiment_mlp(F[valid], y3[valid], sp[valid], "3-Class")
 
     # 2-class
     y2 = map2(yp)
     valid = y2>=0
     run_experiment(F[valid], y2[valid], sp[valid], "2-Class")
+    run_experiment_mlp(F[valid], y2[valid], sp[valid], "2-Class")
 
 
 if __name__ == "__main__":
