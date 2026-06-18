@@ -1,0 +1,9 @@
+numpy
+pandas
+matplotlib
+mne
+pywavelets
+scipy
+scikit-learn
+imbalanced-learn
+tqdm
