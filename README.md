@@ -13,7 +13,7 @@ This project implements an independent exploration of automated EEG-based sleep 
 
 ## Dataset
 
-**Sleep-EDF Database** (original, 8-recording version) — PhysioNet  
+**Sleep-EDF Database** (original, 8-recording version) - PhysioNet  
 https://physionet.org/content/sleep-edf/1.0.0/
 
 Sleep stages considered (depending on class granularity):
@@ -49,7 +49,7 @@ Sleep stages considered (depending on class granularity):
 
 ## Methodology Note : Why These Numbers Differ from the Published Paper
 
-This implementation deliberately uses **Leave-One-Subject-Out cross-validation**, where each fold trains on data from 7 subjects and tests on a completely unseen 8th subject. This is a substantially stricter evaluation protocol than a standard shuffled train/test split, since EEG signal patterns vary meaningfully between individuals — the model cannot rely on having seen similar data from the same subject during training.
+This implementation deliberately uses **Leave-One-Subject-Out cross-validation**, where each fold trains on data from 7 subjects and tests on a completely unseen 8th subject. This is a substantially stricter evaluation protocol than a standard shuffled train/test split, since EEG signal patterns vary meaningfully between individuals - the model cannot rely on having seen similar data from the same subject during training.
 
 The associated IEEE paper reports accuracies of 86% (5-class) up to 97% (2-class), which likely reflects a less strict evaluation setup. The gap observed here highlights an important practical lesson in EEG-based machine learning: **subject-independent generalization is a substantially harder problem than within-subject classification**, and evaluation protocol choice significantly impacts reported performance.
 
