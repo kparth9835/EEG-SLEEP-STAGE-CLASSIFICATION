@@ -18,23 +18,23 @@ https://physionet.org/content/sleep-edf/1.0.0/
 
 Sleep stages considered (depending on class granularity):
 - Wake (W)
-- Stage 1 (S1) — light sleep
-- Stage 2 (S2) — intermediate sleep
-- Stage 3/4 (S3/S4) — merged as deep sleep
-- REM — rapid eye movement sleep
+- Stage 1 (S1) : light sleep
+- Stage 2 (S2) : intermediate sleep
+- Stage 3/4 (S3/S4) : merged as deep sleep
+- REM : rapid eye movement sleep
 
 ## Methodology
 
-1. **Signal Loading** — Raw `.rec` (EDF format) files loaded via MNE, with the Pz-Oz channel selected for analysis
-2. **Hypnogram Parsing** — Sleep stage labels extracted from the original Rechtschaffen & Kales (R&K) byte-encoded `.hyp` format
-3. **Epoching** — Signals segmented into 30-second epochs (3,000 samples at 100 Hz)
-4. **Preprocessing** — Bandpass filtering (0.5–40 Hz) and z-score normalization, with artifact rejection based on amplitude thresholding
-5. **Feature Extraction** — Discrete Wavelet Transform (db4 wavelet, 4 decomposition levels), extracting energy, RMS, mean, standard deviation, entropy, skewness, and kurtosis from each sub-band
-6. **Feature Selection** — ANOVA-based feature selection (`SelectKBest`, top 20 features) to retain only the most statistically significant features
-7. **Classification** — Two models trained and compared:
+1. **Signal Loading** : Raw `.rec` (EDF format) files loaded via MNE, with the Pz-Oz channel selected for analysis
+2. **Hypnogram Parsing** : Sleep stage labels extracted from the original Rechtschaffen & Kales (R&K) byte-encoded `.hyp` format
+3. **Epoching** : Signals segmented into 30-second epochs (3,000 samples at 100 Hz)
+4. **Preprocessing** : Bandpass filtering (0.5–40 Hz) and z-score normalization, with artifact rejection based on amplitude thresholding
+5. **Feature Extraction** : Discrete Wavelet Transform (db4 wavelet, 4 decomposition levels), extracting energy, RMS, mean, standard deviation, entropy, skewness, and kurtosis from each sub-band
+6. **Feature Selection** : ANOVA-based feature selection (`SelectKBest`, top 20 features) to retain only the most statistically significant features
+7. **Classification** : Two models trained and compared:
    - AdaBoost with shallow decision trees, combined with random undersampling for class imbalance
    - MLP (Multi-Layer Perceptron) neural network, using the same feature selection and undersampling pipeline
-8. **Evaluation** — Leave-One-Subject-Out cross-validation (each fold trains on 7 subjects and tests on 1 entirely unseen subject)
+8. **Evaluation** : Leave-One-Subject-Out cross-validation (each fold trains on 7 subjects and tests on 1 entirely unseen subject)
 
 ## Results
 
@@ -47,7 +47,7 @@ Sleep stages considered (depending on class granularity):
 
 **MLP consistently outperforms AdaBoost across every classification scenario**, consistent with the original paper's choice of a neural-network-based approach over simpler tree-based boosting.
 
-## Methodology Note — Why These Numbers Differ from the Published Paper
+## Methodology Note : Why These Numbers Differ from the Published Paper
 
 This implementation deliberately uses **Leave-One-Subject-Out cross-validation**, where each fold trains on data from 7 subjects and tests on a completely unseen 8th subject. This is a substantially stricter evaluation protocol than a standard shuffled train/test split, since EEG signal patterns vary meaningfully between individuals — the model cannot rely on having seen similar data from the same subject during training.
 
